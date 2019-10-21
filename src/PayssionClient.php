@@ -1,5 +1,7 @@
 <?php
 
+namespace Payssion;
+
 /**
  * Client library for Payssion API.
  */
