@@ -11,7 +11,7 @@ class PayssionClient
      * @const string
      */
     const VERSION = '1.3.0.160612';
-    
+
     /**
      * @var string
      */
@@ -20,14 +20,14 @@ class PayssionClient
     protected $secret_key = ''; //your secret key
 
     protected static $sig_keys = array(
-    		'create' => array(
-    				'api_key', 'pm_id', 'amount', 'currency', 'order_id', 'secret_key'
-    		),
-    		'details' => array(
-    				'api_key', 'transaction_id', 'order_id', 'secret_key'
-    		)
+        'create' => array(
+            'api_key', 'pm_id', 'amount', 'currency', 'order_id', 'secret_key'
+        ),
+        'details' => array(
+            'api_key', 'transaction_id', 'order_id', 'secret_key'
+        )
     );
-    
+
     /**
      * @var array
      */
@@ -74,16 +74,16 @@ class PayssionClient
     {
         $this->api_key = $api_key;
         $this->secret_key = $secret_key;
-        
+
         $validate_params = array
         (
             false === extension_loaded('curl') => 'The curl extension must be loaded for using this class!',
             false === extension_loaded('json') => 'The json extension must be loaded for using this class!',
-        	empty($this->api_key) => 'api_key is not set!',
-        	empty($this->secret_key) => 'secret_key is not set!',
+            empty($this->api_key) => 'api_key is not set!',
+            empty($this->secret_key) => 'secret_key is not set!',
         );
         $this->checkForErrors($validate_params);
-        
+
         $this->setLiveMode($is_livemode);
     }
 
@@ -94,33 +94,33 @@ class PayssionClient
      */
     public function setLiveMode($is_livemode)
     {
-    	if ($is_livemode) {
-    		$this->api_url = 'https://www.payssion.com/api/v1/payment/';
-    	} else {
-    		$this->api_url = 'http://sandbox.payssion.com/api/v1/payment/';
-    	}
+        if ($is_livemode) {
+            $this->api_url = 'https://www.payssion.com/api/v1/payment/';
+        } else {
+            $this->api_url = 'http://sandbox.payssion.com/api/v1/payment/';
+        }
     }
 
     /**
      * Set Api URL
-     * 
+     *
      * @param string $url Api URL
      */
     public function setUrl($url)
     {
         $this->api_url = $url;
     }
-    
+
     /**
      * Sets SSL verify
-     * 
+     *
      * @param bool $ssl_verify SSL verify
      */
     public function setSSLverify($ssl_verify)
     {
         $this->ssl_verify = $ssl_verify;
     }
-    
+
     /**
      * Request state getter
      *
@@ -143,7 +143,7 @@ class PayssionClient
         return $this->call(
             'create',
             'post',
-             $params
+            $params
         );
     }
 
@@ -156,11 +156,11 @@ class PayssionClient
      */
     public function getDetails(array $params)
     {
-    	return $this->call(
-    			'details',
-    			'post',
-    			$params
-    	);
+        return $this->call(
+            'details',
+            'post',
+            $params
+        );
     }
 
     /**
@@ -175,7 +175,7 @@ class PayssionClient
     protected function call($method, $request, $params)
     {
         $this->is_success = false;
-        
+
         $validate_params = array
         (
             false === is_string($method) => 'Method name must be string',
@@ -184,10 +184,10 @@ class PayssionClient
         );
 
         $this->checkForErrors($validate_params);
-        
+
         $params['api_key'] = $this->api_key;
         $params['api_sig'] = $this->getSig($params, self::$sig_keys[$method]);
-        
+
         $response = $this->pushData($method, $request, $params);
 
         $response = json_decode($response, true);
@@ -209,15 +209,15 @@ class PayssionClient
      */
     protected function getSig(array &$params, array $sig_keys)
     {
-    	$msg_array = array();
-    	foreach ($sig_keys as $key) {
-    		$msg_array[$key] = isset($params[$key]) ? $params[$key] : '';
-    	}
-    	$msg_array['secret_key'] = $this->secret_key;
-    	
-    	$msg = implode('|', $msg_array);
-    	$sig = md5($msg);
-    	return $sig;
+        $msg_array = array();
+        foreach ($sig_keys as $key) {
+            $msg_array[$key] = isset($params[$key]) ? $params[$key] : '';
+        }
+        $msg_array['secret_key'] = $this->secret_key;
+
+        $msg = implode('|', $msg_array);
+        $sig = md5($msg);
+        return $sig;
     }
 
     /**
@@ -270,15 +270,15 @@ class PayssionClient
 
         curl_setopt($ch, CURLOPT_URL, $this->api_url. $method);
         curl_setopt($ch, CURLOPT_POST, true);
-       
+
         if (is_array($vars)) $vars = http_build_query($vars, '', '&');
         curl_setopt($ch, CURLOPT_POSTFIELDS, $vars);
-        
+
         curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $this->getHeaders());
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->ssl_verify);
-        
+
         $response = curl_exec($ch);
 
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -295,14 +295,14 @@ class PayssionClient
         }
 
         curl_close($ch);
-        
+
         return $response;
     }
 
     /**
      * @return array
      */
-    protected function &getHeaders()
+    protected function getHeaders()
     {
         $langVersion = phpversion();
         $uname       = php_uname();
