@@ -2,6 +2,8 @@
 
 namespace Payssion;
 
+use Exception;
+
 /**
  * Client library for Payssion API.
  */
@@ -10,7 +12,7 @@ class PayssionClient
     /**
      * @const string
      */
-    const VERSION = '1.3.0.160612';
+    const VERSION = '1.3.0.160613';
 
     /**
      * @var string
