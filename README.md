@@ -1,8 +1,10 @@
 payssion-php
 ============
 
+This is fork version of `rytisder/payssion-php-sdk`, with `refund` feature.
+
 ##Prerequisites
-   * PHP 5.3 or above
+   * PHP 5.4 or above
    * curl, json & openssl extensions must be enabled
    
 ##Usage

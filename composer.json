@@ -1,14 +1,18 @@
 {
-  "name": "rytisder/payssion-php-sdk",
+  "name": "chemezov/payssion-php-sdk",
   "type": "library",
   "license": "MIT",
   "authors": [
     {
       "name": "Rytis"
+    },
+    {
+      "name": "Mikhail Chemezov",
+      "email": "michlenanosoft@gmail.com"
     }
   ],
   "require": {
-    "php": ">=5.3"
+    "php": ">=5.4"
   },
   "autoload": {
     "psr-4": {

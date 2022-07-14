@@ -21,20 +21,22 @@ class PayssionClient
     protected $api_key = ''; //your api key
     protected $secret_key = ''; //your secret key
 
-    protected static $sig_keys = array(
-        'create' => array(
-            'api_key', 'pm_id', 'amount', 'currency', 'order_id', 'secret_key'
-        ),
-        'details' => array(
-            'api_key', 'transaction_id', 'order_id', 'secret_key'
-        )
-    );
+    protected static $sig_keys = [
+        'payment/create' => [
+            'api_key', 'pm_id', 'amount', 'currency', 'order_id', 'secret_key',
+        ],
+        'payment/details' => [
+            'api_key', 'transaction_id', 'order_id', 'secret_key',
+        ],
+        'refunds' => [
+            'api_key', 'transaction_id', 'amount', 'currency', 'secret_key',
+        ],
+    ];
 
     /**
      * @var array
      */
-    protected $http_errors = array
-    (
+    protected $http_errors = [
         400 => '400 Bad Request',
         401 => '401 Unauthorized',
         500 => '500 Internal Server Error',
@@ -42,7 +44,7 @@ class PayssionClient
         502 => '502 Bad Gateway',
         503 => '503 Service Unavailable',
         504 => '504 Gateway Timeout',
-    );
+    ];
 
     /**
      * @var bool
@@ -52,12 +54,12 @@ class PayssionClient
     /**
      * @var array
      */
-    protected $allowed_request_methods = array(
+    protected $allowed_request_methods = [
         'get',
         'put',
         'post',
         'delete',
-    );
+    ];
 
     /**
      * @var boolean
@@ -69,7 +71,7 @@ class PayssionClient
      *
      * @param string $api_key Payssion App api_key
      * @param string $secret_key Payssion App secret_key
-     * @param bool   $is_livemode false if you use sandbox api_key and true for live mode
+     * @param bool $is_livemode false if you use sandbox api_key and true for live mode
      * @throws Exception
      */
     public function __construct($api_key, $secret_key, $is_livemode = true)
@@ -77,13 +79,12 @@ class PayssionClient
         $this->api_key = $api_key;
         $this->secret_key = $secret_key;
 
-        $validate_params = array
-        (
+        $validate_params = [
             false === extension_loaded('curl') => 'The curl extension must be loaded for using this class!',
             false === extension_loaded('json') => 'The json extension must be loaded for using this class!',
             empty($this->api_key) => 'api_key is not set!',
             empty($this->secret_key) => 'secret_key is not set!',
-        );
+        ];
         $this->checkForErrors($validate_params);
 
         $this->setLiveMode($is_livemode);
@@ -97,9 +98,9 @@ class PayssionClient
     public function setLiveMode($is_livemode)
     {
         if ($is_livemode) {
-            $this->api_url = 'https://www.payssion.com/api/v1/payment/';
+            $this->api_url = 'https://www.payssion.com/api/v1/';
         } else {
-            $this->api_url = 'http://sandbox.payssion.com/api/v1/payment/';
+            $this->api_url = 'http://sandbox.payssion.com/api/v1/';
         }
     }
 
@@ -143,7 +144,7 @@ class PayssionClient
     public function create(array $params)
     {
         return $this->call(
-            'create',
+            'payment/create',
             'post',
             $params
         );
@@ -159,7 +160,16 @@ class PayssionClient
     public function getDetails(array $params)
     {
         return $this->call(
-            'details',
+            'payment/details',
+            'post',
+            $params
+        );
+    }
+
+    public function refund(array $params)
+    {
+        return $this->call(
+            'refunds',
             'post',
             $params
         );
@@ -170,7 +180,7 @@ class PayssionClient
      *
      * @param string $method
      * @param string $request
-     * @param array  $params
+     * @param array $params
      * @return array
      * @throws Exception
      */
@@ -178,12 +188,11 @@ class PayssionClient
     {
         $this->is_success = false;
 
-        $validate_params = array
-        (
+        $validate_params = [
             false === is_string($method) => 'Method name must be string',
             false === $this->checkRequestMethod($request) => 'Not allowed request method type',
             true === empty($params) => 'params is null',
-        );
+        ];
 
         $this->checkForErrors($validate_params);
 
@@ -194,8 +203,7 @@ class PayssionClient
 
         $response = json_decode($response, true);
 
-        if (isset($response['result_code']) && 200 == $response['result_code'])
-        {
+        if (isset($response['result_code']) && 200 == $response['result_code']) {
             $this->is_success = true;
         }
 
@@ -211,7 +219,7 @@ class PayssionClient
      */
     protected function getSig(array &$params, array $sig_keys)
     {
-        $msg_array = array();
+        $msg_array = [];
         foreach ($sig_keys as $key) {
             $msg_array[$key] = isset($params[$key]) ? $params[$key] : '';
         }
@@ -230,10 +238,8 @@ class PayssionClient
      */
     protected function checkForErrors(&$validate_params)
     {
-        foreach ($validate_params as $key => $error)
-        {
-            if ($key)
-            {
+        foreach ($validate_params as $key => $error) {
+            if ($key) {
                 throw new Exception($error, -1);
             }
         }
@@ -249,8 +255,7 @@ class PayssionClient
     {
         $request_method = strtolower($method_type);
 
-        if(in_array($request_method, $this->allowed_request_methods))
-        {
+        if (in_array($request_method, $this->allowed_request_methods)) {
             return true;
         }
 
@@ -260,8 +265,8 @@ class PayssionClient
     /**
      * Method responsible for pushing data to server
      *
-     * @param string       $method
-     * @param string       $method_type
+     * @param string $method
+     * @param string $method_type
      * @param array|string $vars
      * @return string
      * @throws Exception
@@ -270,7 +275,7 @@ class PayssionClient
     {
         $ch = curl_init();
 
-        curl_setopt($ch, CURLOPT_URL, $this->api_url. $method);
+        curl_setopt($ch, CURLOPT_URL, $this->api_url . $method);
         curl_setopt($ch, CURLOPT_POST, true);
 
         if (is_array($vars)) $vars = http_build_query($vars, '', '&');
@@ -285,15 +290,13 @@ class PayssionClient
 
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-        if (isset($this->http_errors[$code]))
-        {
+        if (isset($this->http_errors[$code])) {
             throw new Exception('Response Http Error - ' . $this->http_errors[$code], $code);
         }
 
         $code = curl_errno($ch);
-        if (0 < $code)
-        {
-            throw new Exception('Unable to connect to ' . $this->api_url . ' Error: ' . "$code :". curl_error($ch), $code);
+        if (0 < $code) {
+            throw new Exception('Unable to connect to ' . $this->api_url . ' Error: ' . "$code :" . curl_error($ch), $code);
         }
 
         curl_close($ch);
@@ -307,18 +310,18 @@ class PayssionClient
     protected function getHeaders()
     {
         $langVersion = phpversion();
-        $uname       = php_uname();
-        $ua          = array(
-            'version'      => self::VERSION,
-            'lang'         => 'php',
+        $uname = php_uname();
+        $ua = [
+            'version' => self::VERSION,
+            'lang' => 'php',
             'lang_version' => $langVersion,
-            'publisher'    => 'payssion',
-            'uname'        => $uname,
-        );
-        return array(
+            'publisher' => 'payssion',
+            'uname' => $uname,
+        ];
+        return [
             'X-Payssion-Client-User-Agent: ' . json_encode($ua),
             "User-Agent: Payssion/php/$langVersion/" . self::VERSION,
             'Content-Type: application/x-www-form-urlencoded',
-        );
+        ];
     }
 }
